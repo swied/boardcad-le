@@ -14,7 +14,7 @@ package boardcad.gui.jdk;
 
 /**
 
- * @author Håvard
+ * @author HÃ¥vard
 
  *
 

@@ -15,7 +15,7 @@ package board;
 
 /**
 
- * @author Håvard
+ * @author HÃ¥vard
 
  *
 

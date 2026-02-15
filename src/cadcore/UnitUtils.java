@@ -257,15 +257,15 @@ public class UnitUtils {
 
 		try{
 			string = string.replace(",", ".");
-			if(string.endsWith("l") || string.endsWith("liter") || string.endsWith("litre") || string.endsWith("dm^3") || string.endsWith("dm³") || string.endsWith("dm3"))
+			if(string.endsWith("l") || string.endsWith("liter") || string.endsWith("litre") || string.endsWith("dm^3") || string.endsWith("dmÂ³") || string.endsWith("dm3"))
 			{
 				mul = 1;	//Default to cubic dm (liter)
 			}
-			else if(string.endsWith("m") || string.endsWith("m3") || string.endsWith("m^3") || string.endsWith("m³") || string.endsWith("cubicmeter") || string.endsWith("cubic") || string.endsWith("cubic meter") || string.endsWith("cubicmetre") || string.endsWith("cubic metre"))
+			else if(string.endsWith("m") || string.endsWith("m3") || string.endsWith("m^3") || string.endsWith("mÂ³") || string.endsWith("cubicmeter") || string.endsWith("cubic") || string.endsWith("cubic meter") || string.endsWith("cubicmetre") || string.endsWith("cubic metre"))
 			{
 				mul = 1000.0;	// to cubic meter
 			}
-		    else if(string.endsWith("cubic feet") || string.endsWith("cubic foot") || string.endsWith("cubic ft") || string.endsWith("cubic ft")  || string.endsWith("cu feet") || string.endsWith("cu foot") || string.endsWith("cu ft") || string.endsWith("ft³") || string.endsWith("ft") || string.endsWith("ft3") || string.endsWith("feet³") || string.endsWith("foot³") || string.endsWith("feet^3") || string.endsWith("foot^3") || string.endsWith("ft^3"))
+		    else if(string.endsWith("cubic feet") || string.endsWith("cubic foot") || string.endsWith("cubic ft") || string.endsWith("cubic ft")  || string.endsWith("cu feet") || string.endsWith("cu foot") || string.endsWith("cu ft") || string.endsWith("ftÂ³") || string.endsWith("ft") || string.endsWith("ft3") || string.endsWith("feetÂ³") || string.endsWith("footÂ³") || string.endsWith("feet^3") || string.endsWith("foot^3") || string.endsWith("ft^3"))
 			{
 				mul = 28.3168466;	//Pound pr. cubic foot
 			}
