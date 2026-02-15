@@ -1,0 +1,82 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.boardcad'
+version = '0.0.0-SNAPSHOT'
+
+def javaRelease = 25
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaRelease)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+            include '**/*.properties', '**/*.png', '**/*.gif', '**/*.bmp', '**/*.ico', '**/*.svg'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = uri('https://jogamp.org/deployment/maven') }
+    maven { url = uri('https://jogamp.org/deployment/maven-java3d') }
+}
+
+def os = org.gradle.internal.os.OperatingSystem.current()
+
+def nativeClassifier =
+        os.isWindows() ? "natives-windows-amd64" :
+        os.isLinux()   ? "natives-linux-amd64" :
+        os.isMacOsX()  ? "natives-macosx-universal" :
+        null
+
+dependencies {
+    implementation 'org.jogamp.java3d:java3d-core:1.7.2'
+    implementation 'org.jogamp.java3d:java3d-utils:1.7.2'
+    implementation 'org.jogamp.java3d:vecmath:1.7.2'
+
+    implementation 'org.jogamp.jogl:jogl-all:2.6.0'
+    implementation 'org.jogamp.gluegen:gluegen-rt:2.6.0'
+
+    runtimeOnly "org.jogamp.jogl:jogl-all:2.6.0:${nativeClassifier}"
+    runtimeOnly "org.jogamp.gluegen:gluegen-rt:2.6.0:${nativeClassifier}"
+
+    implementation 'com.github.weisj:darklaf-core:3.0.2'
+    implementation 'org.javassist:javassist:3.30.2-GA'
+
+    implementation 'org.pushing-pixels:radiance-neon:3.5.1'
+    implementation 'org.pushing-pixels:radiance-substance:3.5.1'
+    implementation 'org.pushing-pixels:radiance-trident:3.5.1'
+
+    implementation 'org.reflections:reflections:0.9.12'
+    implementation 'org.ujmp:ujmp-complete:0.3.0'
+}
+
+application {
+    mainClass = 'boardcad.gui.jdk.BoardCAD'
+    applicationDefaultJvmArgs = [
+            '--enable-native-access=ALL-UNNAMED',
+            '--add-exports', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-exports', 'java.desktop/sun.awt=ALL-UNNAMED',
+            '--add-exports', 'java.desktop/sun.java2d=ALL-UNNAMED'
+    ]
+}
+
+tasks.register('runBoardCAD', JavaExec) {
+    group = 'application'
+    description = 'Run BoardCAD'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = application.mainClass
+    jvmArgs = application.applicationDefaultJvmArgs
+    dependsOn tasks.named('classes')
+}
