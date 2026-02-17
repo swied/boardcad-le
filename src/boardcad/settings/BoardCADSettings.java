@@ -13,6 +13,12 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import org.jogamp.vecmath.Color3f;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatAllIJThemes;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialLighterIJTheme;
+
 import org.reflections.*;
 
 import boardcad.gui.jdk.BoardCAD;
@@ -218,6 +224,14 @@ public class BoardCADSettings extends CategorizedSettings
 		Set<Class<? extends SubstanceLookAndFeel>> substanceLookAndFeels = reflections.getSubTypesOf(SubstanceLookAndFeel.class);
 		for (Class<? extends SubstanceLookAndFeel> lookAndFeel : substanceLookAndFeels) {
 			looks.put(lookAndFeel.getSimpleName().replace("Substance", "").replace("LookAndFeel",""), lookAndFeel.getName());
+		}
+
+		looks.put("FlatLaf Light", FlatLightLaf.class.getName());
+		looks.put("FlatLaf Dark", FlatDarkLaf.class.getName());
+		looks.put("FlatLaf Material Lighter", FlatMaterialLighterIJTheme.class.getName());
+		looks.put("FlatLaf Material Darker", FlatMaterialDarkerIJTheme.class.getName());
+		for (FlatAllIJThemes.FlatIJLookAndFeelInfo info : FlatAllIJThemes.INFOS) {
+			looks.put("FlatLaf " + info.getName(), info.getClassName());
 		}
 
 		mMiscSettings.addObject(LOOK_AND_FEEL, mMiscSettings.new PairType("Windows", looks),

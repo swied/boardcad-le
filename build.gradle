@@ -55,6 +55,8 @@ dependencies {
     runtimeOnly "org.jogamp.gluegen:gluegen-rt:2.6.0:${nativeClassifier}"
 
     implementation 'com.github.weisj:darklaf-core:3.0.2'
+    implementation 'com.formdev:flatlaf:3.5.4'
+    implementation 'com.formdev:flatlaf-intellij-themes:3.5.4'
     implementation 'org.javassist:javassist:3.30.2-GA'
 
     implementation 'org.pushing-pixels:radiance-neon:3.5.1'
