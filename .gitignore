@@ -5,3 +5,5 @@ release/
 .gradle/
 .theia/
 build/
+.classpath
+.project
