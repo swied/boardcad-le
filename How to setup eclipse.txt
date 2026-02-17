@@ -1,4 +1,0 @@
-1. Clone from github
-2. File menu -> Open project from file system
-3. Select dir where the clone is as import source
-4. Run menu -> Debug Configuration

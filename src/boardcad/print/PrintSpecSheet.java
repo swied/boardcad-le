@@ -15,7 +15,7 @@ package boardcad.print;
 
 /**
 
- * @author Håvard
+ * @author HÃ¥vard
 
  *
 

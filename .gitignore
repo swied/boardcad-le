@@ -1,3 +1,10 @@
 /bin/
 dist/
 release/
+.claude/
+.gradle/
+.theia/
+build/
+.classpath
+.project
+.prompts/

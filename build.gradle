@@ -1,0 +1,220 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'org.boardcad'
+version = '3.2.2'
+
+def releaseVendor = (findProperty('releaseVendor') ?: 'BoardCAD Team').toString()
+def releaseName = (findProperty('releaseName') ?: 'BoardCAD').toString()
+
+def javaRelease = 25
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(javaRelease)
+    }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+        }
+        resources {
+            srcDirs = ['src']
+            include '**/*.properties', '**/*.png', '**/*.gif', '**/*.bmp', '**/*.ico', '**/*.svg', '**/*.icns'
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+    maven { url = uri('https://jogamp.org/deployment/maven') }
+    maven { url = uri('https://jogamp.org/deployment/maven-java3d') }
+}
+
+def os = org.gradle.internal.os.OperatingSystem.current()
+
+def nativeClassifier =
+        os.isWindows() ? "natives-windows-amd64" :
+        os.isLinux()   ? "natives-linux-amd64" :
+        os.isMacOsX()  ? "natives-macosx-universal" :
+        null
+
+dependencies {
+    implementation 'org.jogamp.java3d:java3d-core:1.7.2'
+    implementation 'org.jogamp.java3d:java3d-utils:1.7.2'
+    implementation 'org.jogamp.java3d:vecmath:1.7.2'
+
+    implementation 'org.jogamp.jogl:jogl-all:2.6.0'
+    implementation 'org.jogamp.gluegen:gluegen-rt:2.6.0'
+
+    runtimeOnly "org.jogamp.jogl:jogl-all:2.6.0:${nativeClassifier}"
+    runtimeOnly "org.jogamp.gluegen:gluegen-rt:2.6.0:${nativeClassifier}"
+
+    implementation 'com.github.weisj:darklaf-core:3.0.2'
+    implementation 'org.javassist:javassist:3.30.2-GA'
+
+    implementation 'org.pushing-pixels:radiance-neon:3.5.1'
+    implementation 'org.pushing-pixels:radiance-substance:3.5.1'
+    implementation 'org.pushing-pixels:radiance-trident:3.5.1'
+
+    implementation 'org.reflections:reflections:0.9.12'
+    implementation 'org.ujmp:ujmp-complete:0.3.0'
+}
+
+application {
+    mainClass = 'boardcad.gui.jdk.BoardCAD'
+    applicationDefaultJvmArgs = [
+            '--enable-native-access=ALL-UNNAMED',
+            '--add-exports', 'java.base/java.lang=ALL-UNNAMED',
+            '--add-exports', 'java.desktop/sun.awt=ALL-UNNAMED',
+            '--add-exports', 'java.desktop/sun.java2d=ALL-UNNAMED'
+    ]
+}
+
+tasks.register('runBoardCAD', JavaExec) {
+    group = 'application'
+    description = 'Run BoardCAD'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = application.mainClass
+    jvmArgs = application.applicationDefaultJvmArgs
+    dependsOn tasks.named('classes')
+}
+
+def releaseTypeProvider = providers.provider {
+    if (os.isWindows()) return 'msi'
+    if (os.isMacOsX()) return 'dmg'
+    if (os.isLinux()) return 'deb'
+    return null
+}
+
+def releaseIconProvider = providers.provider {
+    if (os.isWindows()) return layout.projectDirectory.file('src/boardcad/icons/BC 32x32.ico').asFile
+    if (os.isMacOsX()) return layout.projectDirectory.file('src/boardcad/icons/BC 32x32.icns').asFile
+    if (os.isLinux()) return layout.projectDirectory.file('src/boardcad/icons/BC 32x32.png').asFile
+    return null
+}
+
+def runtimeImageDirProvider = providers.provider { layout.buildDirectory.dir('runtime-image').get().asFile }
+def appInputDirProvider = providers.provider { layout.buildDirectory.dir('release/input').get().asFile }
+
+def javaHomeProvider = providers.provider { javaToolchains.launcherFor(java.toolchain).get().metadata.installationPath.asFile }
+def jpackageExeProvider = providers.provider {
+    def bin = os.isWindows() ? 'bin/jpackage.exe' : 'bin/jpackage'
+    new File(javaHomeProvider.get(), bin)
+}
+
+tasks.register('prepareAppInput', Sync) {
+    group = 'release'
+
+    def outDir = appInputDirProvider.get()
+
+    into outDir
+
+    from(tasks.named('jar'))
+    from(configurations.runtimeClasspath)
+}
+
+tasks.register('prepareRuntimeImage', Sync) {
+    group = 'release'
+    description = 'Prepare a runtime image by copying the full JDK from the configured toolchain'
+
+    def outDir = runtimeImageDirProvider.get()
+
+    into outDir
+    from(javaHomeProvider)
+}
+
+tasks.register('cleanReleaseDir', Delete) {
+    group = 'release'
+    delete layout.projectDirectory.dir('release')
+}
+
+tasks.register('packageRelease', Exec) {
+    group = 'release'
+    description = 'Create a platform installer/package using jpackage (MSI/DMG/DEB) into ./release'
+
+    dependsOn tasks.named('prepareAppInput')
+    dependsOn tasks.named('prepareRuntimeImage')
+    dependsOn tasks.named('cleanReleaseDir')
+
+    inputs.files(configurations.runtimeClasspath)
+    inputs.file(tasks.named('jar').flatMap { it.archiveFile })
+    inputs.dir(runtimeImageDirProvider)
+    outputs.dir(layout.projectDirectory.dir('release'))
+
+    doFirst {
+        def jpackageExe = jpackageExeProvider.get()
+        if (!jpackageExe.exists()) {
+            throw new GradleException("jpackage not found at ${jpackageExe.path}")
+        }
+
+        def type = releaseTypeProvider.get()
+        if (type == null) {
+            throw new GradleException("Unsupported OS for packaging: ${os}")
+        }
+
+        def iconFile = releaseIconProvider.get()
+        if (iconFile != null && !iconFile.exists()) {
+            throw new GradleException("Missing icon file: ${iconFile.path}")
+        }
+
+        def inputDir = appInputDirProvider.get()
+        def mainJar = tasks.named('jar').get().archiveFileName.get()
+
+        def jpackageVersion = providers.provider {
+            def v = project.version.toString()
+            v = v.replaceAll(/[^0-9.]/, '.')
+            v = v.replaceAll(/\.+/, '.')
+            v = v.replaceAll(/^\./, '')
+            v = v.replaceAll(/\.$/, '')
+            if (v.isBlank()) v = '0.0.0'
+            if (v.tokenize('.').size() < 3) {
+                v = (v + '.0.0').tokenize('.').take(3).join('.')
+            }
+            return v
+        }
+
+        def cmd = [
+                jpackageExe.path,
+                '--name', releaseName,
+                '--app-version', jpackageVersion.get(),
+                '--vendor', releaseVendor,
+                '--input', inputDir.path,
+                '--dest', layout.projectDirectory.dir('release').asFile.path,
+                '--main-jar', mainJar,
+                '--main-class', application.mainClass.get(),
+                '--runtime-image', runtimeImageDirProvider.get().path,
+                '--java-options', '--add-opens',
+                '--java-options', 'java.base/java.lang=ALL-UNNAMED',
+                '--java-options', '--add-opens',
+                '--java-options', 'java.desktop/sun.java2d=ALL-UNNAMED',
+                '--java-options', '--add-opens',
+                '--java-options', 'java.desktop/sun.awt=ALL-UNNAMED',
+                '--java-options', '-Dsun.awt.exception.handler=com.example.MyExceptionLogger',
+                '--type', type,
+                '--verbose'
+        ]
+
+        if (os.isWindows()) {
+            cmd += ['--java-options', '--add-opens']
+            cmd += ['--java-options', 'java.desktop/sun.awt.windows=ALL-UNNAMED']
+            cmd += ['--win-menu', '--win-shortcut']
+        }
+
+        if (iconFile != null) {
+            cmd += ['--icon', iconFile.path]
+        }
+
+        commandLine cmd
+    }
+}
+
+tasks.register('release') {
+    group = 'release'
+    description = 'Build trimmed runtime image and create platform-specific installer in ./release'
+    dependsOn tasks.named('packageRelease')
+}

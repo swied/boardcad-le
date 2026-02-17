@@ -14,7 +14,7 @@ package boardcad.gui.jdk;
 
 /**
 
- * @author Håvard
+ * @author HÃ¥vard
 
  *
 
@@ -50,7 +50,7 @@ import boardcad.i18n.LanguageResource;
 import board.writers.*;
 
 public class BoardCAD implements Runnable, KeyEventDispatcher {
-	private static final String appname = "BoardCAD v3.2.1 Limited Edition";
+	private static final String appname = "BoardCAD v3.2.2 LE";
 	enum DeckOrBottom {
 		DECK, BOTTOM, BOTH
 	};
@@ -139,7 +139,14 @@ public class BoardCAD implements Runnable, KeyEventDispatcher {
 
 	private PopupMenu mPopupMenu;
 	
+	private static volatile String[] startupArgs = new String[0];
+
+	public static String[] getStartupArgs() {
+		return startupArgs.clone();
+	}
+
 	public static void main(final String[] args) {
+		startupArgs = (args != null) ? args.clone() : new String[0];
 		BoardCAD.getInstance();
 	}
 

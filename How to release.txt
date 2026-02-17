@@ -1,4 +1,0 @@
-1. From eclipse File menu, export-> runnable jar file. Use "Copy required libraries..." option
-2. Run generate_release.bat
-
-Generating the release signs the jar and uses jpackage to make an installer. jpackage require wix toolkit. 
