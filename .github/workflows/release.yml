@@ -29,10 +29,14 @@ jobs:
           java-version: '25'
           cache: gradle
 
+      - name: Ensure Gradle wrapper is executable
+        if: runner.os != 'Windows'
+        shell: bash
+        run: chmod +x ./gradlew
+
       - name: Build release package
         shell: bash
-        run: |
-          ./gradlew --no-daemon --stacktrace release
+        run: ./gradlew --no-daemon --stacktrace release
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
