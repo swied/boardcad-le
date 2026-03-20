@@ -439,6 +439,21 @@ public class BrdReader {
 					brd.setAux3(val);
 				}
 					break;
+				case 60: // tailType
+				{
+					brd.setTailType(Integer.valueOf(val));
+				}
+					break;
+				case 61: // swallowTailDepth
+				{
+					brd.setSwallowTailDepth(Double.valueOf(val));
+				}
+					break;
+				case 62: // swallowTailWidth
+				{
+					brd.setSwallowTailWidth(Double.valueOf(val));
+				}
+					break;
 
 				case 99: // tailMargin
 				{

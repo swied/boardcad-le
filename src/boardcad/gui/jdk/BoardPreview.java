@@ -148,8 +148,8 @@ public final class BoardPreview extends JComponent implements PropertyChangeList
 	
 	        		double outlineDrawPos = width/2 - (mBrd.getThickness()*scale + 5.0*scale)/2;
 	
-	        		BezierBoardDrawUtil.paintBezierSplines(jd, outlineDrawPos, upperFrameHeight-bottomMargin, scale, 0.0, Color.BLACK, stroke, new BezierSpline[]{mBrd.getOutline()}, BezierBoardDrawUtil.Vertical | BezierBoardDrawUtil.FlipY | BezierBoardDrawUtil.MirrorX, true);
-	        		BezierBoardDrawUtil.paintBezierSplines(jd, outlineDrawPos +  mBrd.getMaxWidth()*scale/2+ mBrd.getThickness()*scale + 5.0*scale, 0.0, upperFrameHeight-bottomMargin, scale , Color.BLACK, stroke, new BezierSpline[]{mBrd.getDeck(), mBrd.getBottom()}, BezierBoardDrawUtil.Vertical | BezierBoardDrawUtil.FlipX | BezierBoardDrawUtil.FlipY, true);
+	        		BezierBoardDrawUtil.paintBezierSplines(jd, outlineDrawPos, upperFrameHeight-bottomMargin, scale, 0.0, Color.BLACK, stroke, mBrd, new BezierSpline[]{mBrd.getOutline()}, BezierBoardDrawUtil.Vertical | BezierBoardDrawUtil.FlipY | BezierBoardDrawUtil.MirrorX, true);
+	        		BezierBoardDrawUtil.paintBezierSplines(jd, outlineDrawPos +  mBrd.getMaxWidth()*scale/2+ mBrd.getThickness()*scale + 5.0*scale, 0.0, upperFrameHeight-bottomMargin, scale , Color.BLACK, stroke, mBrd, new BezierSpline[]{mBrd.getDeck(), mBrd.getBottom()}, BezierBoardDrawUtil.Vertical | BezierBoardDrawUtil.FlipX | BezierBoardDrawUtil.FlipY, true);
 	
 	            	//Text
 	        		String modelStr = ((!mBrd.getModel().isEmpty())?(LanguageResource.getString("MODEL_STR") + mBrd.getModel()):"");

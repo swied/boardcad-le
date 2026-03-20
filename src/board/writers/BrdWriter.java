@@ -38,6 +38,9 @@ public class BrdWriter {
 			write(writer, 55, brd.getAux1());
 			write(writer, 56, brd.getAux2());
 			write(writer, 57, brd.getAux3());
+			write(writer, 60, brd.getTailType());
+			write(writer, 61, brd.getSwallowTailDepth());
+			write(writer, 62, brd.getSwallowTailWidth());
 			write(writer, 43, brd.getMachineFolder());
 			write(writer, 11, brd.getTopCuts());
 			write(writer, 12, brd.getBottomCuts());

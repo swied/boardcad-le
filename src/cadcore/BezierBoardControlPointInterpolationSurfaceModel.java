@@ -77,6 +77,15 @@ class BezierBoardControlPointInterpolationSurfaceModel extends
 		Point3d point = new Point3d(x, point2D.x, point2D.y);
 		point.z += brd.getRockerAtPos(x);
 
+		if(brd.getTailType() == 1 && x < brd.getSwallowTailDepth())
+		{
+			double swallowY = (brd.getSwallowTailWidth()/2.0) * (1.0 - x/brd.getSwallowTailDepth());
+			if(Math.abs(point.y) < swallowY)
+			{
+				point.y = swallowY * (point.y < 0 ? -1 : 1);
+			}
+		}
+
 		return point;
 	}
 

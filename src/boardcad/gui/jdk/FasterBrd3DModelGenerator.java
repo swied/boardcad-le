@@ -189,7 +189,10 @@ public class FasterBrd3DModelGenerator {
 				deckVertices[i][j] = brd.getSurfacePoint(xPos, minAngle, maxAngle, i, widthSteps);
 				deckNormals[i][j] = brd.getSurfaceNormal(xPos, minAngle, maxAngle,i, widthSteps);
 				if(i == 0){
-					deckVertices[i][j].setY(0.0);
+					if(brd.getTailType() != 1 || xPos >= brd.getSwallowTailDepth())
+					{
+						deckVertices[i][j].setY(0.0);
+					}
 				}
 				xPos += lengthStep;
 			}
@@ -273,7 +276,10 @@ public class FasterBrd3DModelGenerator {
 				bottomVertices[i][j] = brd.getSurfacePoint(xPos, minAngle, maxAngle, i, widthSteps);
 				bottomNormals[i][j] = brd.getSurfaceNormal(xPos, minAngle, maxAngle,i, widthSteps);
 				if(i == widthSteps){
-					bottomVertices[i][j].setY(0.0);
+					if(brd.getTailType() != 1 || xPos >= brd.getSwallowTailDepth())
+					{
+						bottomVertices[i][j].setY(0.0);
+					}
 				}
 				xPos += lengthStep;
 			}

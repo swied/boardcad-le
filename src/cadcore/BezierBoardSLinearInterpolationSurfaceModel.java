@@ -119,6 +119,15 @@ class BezierBoardSLinearInterpolationSurfaceModel extends
 
 		Point3d point = new Point3d(x, ret.x, ret.y + rockerAtPos);
 
+		if(brd.getTailType() == 1 && x < brd.getSwallowTailDepth())
+		{
+			double swallowY = (brd.getSwallowTailWidth()/2.0) * (1.0 - x/brd.getSwallowTailDepth());
+			if(Math.abs(point.y) < swallowY)
+			{
+				point.y = swallowY * (point.y < 0 ? -1 : 1);
+			}
+		}
+
 		// System.out.printf("BezierBoardSLinearInterpolationSurfaceModel.getPointAt() x:%f, result: %f, %f, %f\n",
 		// x, point.x, point.y, point.z);
 

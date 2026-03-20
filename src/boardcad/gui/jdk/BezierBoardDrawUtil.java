@@ -44,6 +44,10 @@ public class BezierBoardDrawUtil {
 	static BezierBoard mBrd;
 
 	public static GeneralPath makeBezierPathFromControlPoints(BezierSpline spline, boolean flipX, boolean flipY, boolean vertical, boolean reverse) {
+		return makeBezierPathFromControlPoints(null, spline, flipX, flipY, vertical, reverse);
+	}
+
+	public static GeneralPath makeBezierPathFromControlPoints(BezierBoard brd, BezierSpline spline, boolean flipX, boolean flipY, boolean vertical, boolean reverse) {
 		GeneralPath path = new GeneralPath(Path2D.WIND_EVEN_ODD);
 
 		if (spline == null)
@@ -72,6 +76,8 @@ public class BezierBoardDrawUtil {
 
 		double mulX = flipX ? -1 : 1;
 		double mulY = flipY ? -1 : 1;
+
+		boolean isOutline = (brd != null && spline == brd.getOutline());
 
 		if (reverse) {
 
@@ -118,6 +124,26 @@ public class BezierBoardDrawUtil {
 					ey = tmp;
 				}
 
+				if(isOutline && brd.getTailType() == 1)
+				{
+					double depth = brd.getSwallowTailDepth();
+					double width = brd.getSwallowTailWidth();
+					
+					// Apply swallow tail adjustment to control points and end point
+					if(scx < depth) {
+						double swallowY = (width/2.0) * (1.0 - scx/depth);
+						if(scy < swallowY) scy = swallowY;
+					}
+					if(ecx < depth) {
+						double swallowY = (width/2.0) * (1.0 - ecx/depth);
+						if(ecy < swallowY) ecy = swallowY;
+					}
+					if(ex < depth) {
+						double swallowY = (width/2.0) * (1.0 - ex/depth);
+						if(ey < swallowY) ey = swallowY;
+					}
+				}
+
 				path.curveTo((float) (scx * mulX), (float) (scy * mulY), (float) (ecx * mulX), (float) (ecy * mulY), (float) (ex * mulX), (float) (ey * mulY));
 
 			}
@@ -135,6 +161,16 @@ public class BezierBoardDrawUtil {
 
 			sx *= mulX;
 			sy *= mulY;
+
+			if(isOutline && brd.getTailType() == 1)
+			{
+				double depth = brd.getSwallowTailDepth();
+				double width = brd.getSwallowTailWidth();
+				if(sx < depth) {
+					double swallowY = (width/2.0) * (1.0 - sx/depth);
+					if(sy < swallowY) sy = swallowY;
+				}
+			}
 
 			path.moveTo((float) (sx), (float) (sy));
 
@@ -164,6 +200,26 @@ public class BezierBoardDrawUtil {
 					tmp = ex;
 					ex = ey;
 					ey = tmp;
+				}
+
+				if(isOutline && brd.getTailType() == 1)
+				{
+					double depth = brd.getSwallowTailDepth();
+					double width = brd.getSwallowTailWidth();
+					
+					// Apply swallow tail adjustment to control points and end point
+					if(scx < depth) {
+						double swallowY = (width/2.0) * (1.0 - scx/depth);
+						if(scy < swallowY) scy = swallowY;
+					}
+					if(ecx < depth) {
+						double swallowY = (width/2.0) * (1.0 - ecx/depth);
+						if(ecy < swallowY) ecy = swallowY;
+					}
+					if(ex < depth) {
+						double swallowY = (width/2.0) * (1.0 - ex/depth);
+						if(ey < swallowY) ey = swallowY;
+					}
 				}
 
 				path.curveTo((float) (scx * mulX), (float) (scy * mulY), (float) (ecx * mulX), (float) (ecy * mulY), (float) (ex * mulX), (float) (ey * mulY));
@@ -215,21 +271,25 @@ public class BezierBoardDrawUtil {
 	}
 
 	public static void paintBezierSpline(AbstractDraw d, double offsetX, double offsetY, double scale, double rotation, Color color, Stroke stroke, BezierSpline mPoints, int DrawControl, boolean fill) {
+		paintBezierSpline(d, offsetX, offsetY, scale, rotation, color, stroke, null, mPoints, DrawControl, fill);
+	}
+
+	public static void paintBezierSpline(AbstractDraw d, double offsetX, double offsetY, double scale, double rotation, Color color, Stroke stroke, BezierBoard brd, BezierSpline mPoints, int DrawControl, boolean fill) {
 		if (mPoints == null)
 			return;
 
-		GeneralPath path = makeBezierPathFromControlPoints(mPoints, (DrawControl & BezierBoardDrawUtil.FlipX) != 0, (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
+		GeneralPath path = makeBezierPathFromControlPoints(brd, mPoints, (DrawControl & BezierBoardDrawUtil.FlipX) != 0, (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
 				(DrawControl & BezierBoardDrawUtil.Vertical) != 0, false);
 		paintPath(d, offsetX, offsetY, scale, rotation, color, stroke, path, fill);
 
 		if ((DrawControl & BezierBoardDrawUtil.MirrorX) != 0) {
-			path = makeBezierPathFromControlPoints(mPoints, !((DrawControl & BezierBoardDrawUtil.FlipX) != 0), (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
+			path = makeBezierPathFromControlPoints(brd, mPoints, !((DrawControl & BezierBoardDrawUtil.FlipX) != 0), (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
 					(DrawControl & BezierBoardDrawUtil.Vertical) != 0, false);
 			paintPath(d, offsetX, offsetY, scale, rotation, color, stroke, path, fill);
 		}
 
 		if ((DrawControl & BezierBoardDrawUtil.MirrorY) != 0) {
-			path = makeBezierPathFromControlPoints(mPoints, (DrawControl & BezierBoardDrawUtil.FlipX) != 0, !((DrawControl & BezierBoardDrawUtil.FlipY) != 0),
+			path = makeBezierPathFromControlPoints(brd, mPoints, (DrawControl & BezierBoardDrawUtil.FlipX) != 0, !((DrawControl & BezierBoardDrawUtil.FlipY) != 0),
 					(DrawControl & BezierBoardDrawUtil.Vertical) != 0, false);
 			paintPath(d, offsetX, offsetY, scale, rotation, color, stroke, path, fill);
 		}
@@ -237,12 +297,17 @@ public class BezierBoardDrawUtil {
 
 	public static void paintBezierSplines(AbstractDraw d, double offsetX, double offsetY, double scale, double rotation, Color color, Stroke stroke, BezierSpline[] splines, int DrawControl,
 			boolean fill) {
+		paintBezierSplines(d, offsetX, offsetY, scale, rotation, color, stroke, null, splines, DrawControl, fill);
+	}
+
+	public static void paintBezierSplines(AbstractDraw d, double offsetX, double offsetY, double scale, double rotation, Color color, Stroke stroke, BezierBoard brd, BezierSpline[] splines, int DrawControl,
+			boolean fill) {
 		if (splines == null)
 			return;
 
 		GeneralPath path = new GeneralPath();
 		for (int i = 0; i < splines.length; i++) {
-			GeneralPath tmp = makeBezierPathFromControlPoints(splines[i], (DrawControl & BezierBoardDrawUtil.FlipX) != 0, (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
+			GeneralPath tmp = makeBezierPathFromControlPoints(brd, splines[i], (DrawControl & BezierBoardDrawUtil.FlipX) != 0, (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
 					(DrawControl & BezierBoardDrawUtil.Vertical) != 0, i % 2 != 0);
 			path.append(tmp.getPathIterator(null), true);
 		}
@@ -252,7 +317,7 @@ public class BezierBoardDrawUtil {
 			path.reset();
 
 			for (int i = 0; i < splines.length; i++) {
-				GeneralPath tmp = makeBezierPathFromControlPoints(splines[i], !((DrawControl & BezierBoardDrawUtil.FlipX) != 0), (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
+				GeneralPath tmp = makeBezierPathFromControlPoints(brd, splines[i], !((DrawControl & BezierBoardDrawUtil.FlipX) != 0), (DrawControl & BezierBoardDrawUtil.FlipY) != 0,
 						(DrawControl & BezierBoardDrawUtil.Vertical) != 0, i % 2 != 0);
 				path.append(tmp.getPathIterator(null), true);
 			}
@@ -262,7 +327,7 @@ public class BezierBoardDrawUtil {
 		if ((DrawControl & BezierBoardDrawUtil.MirrorY) != 0) {
 			path.reset();
 			for (int i = 0; i < splines.length; i++) {
-				GeneralPath tmp = makeBezierPathFromControlPoints(splines[i], (DrawControl & BezierBoardDrawUtil.FlipX) != 0, !((DrawControl & BezierBoardDrawUtil.FlipY) != 0),
+				GeneralPath tmp = makeBezierPathFromControlPoints(brd, splines[i], (DrawControl & BezierBoardDrawUtil.FlipX) != 0, !((DrawControl & BezierBoardDrawUtil.FlipY) != 0),
 						(DrawControl & BezierBoardDrawUtil.Vertical) != 0, i % 2 != 0);
 				path.append(tmp.getPathIterator(null), true);
 			}
@@ -1670,9 +1735,9 @@ public class BezierBoardDrawUtil {
 
 		paintGrid(d, offsetX, offsetY, scale, rotation, new Color(128, 128, 128), brd.getLength(), brd.getCenterWidth() / 2.0, false, false);
 
-		GeneralPath outlineLower = makeBezierPathFromControlPoints(brd.getOutline(), false, false, false, false);
+		GeneralPath outlineLower = makeBezierPathFromControlPoints(brd, brd.getOutline(), false, false, false, false);
+		GeneralPath outlineUpper = makeBezierPathFromControlPoints(brd, brd.getOutline(), false, true, false, false);
 
-		GeneralPath outlineUpper = makeBezierPathFromControlPoints(brd.getOutline(), false, true, false, false);
 
 		Stroke stroke = new BasicStroke((float) (2.0 / scale));
 
@@ -1781,9 +1846,9 @@ public class BezierBoardDrawUtil {
 
 		paintGrid(d, offsetX, offsetY, scale, rotation, new Color(128, 128, 128), brd.getLength(), brd.getMaxWidth() / 2, false, false);
 
-		GeneralPath outlineLower = makeBezierPathFromControlPoints(brd.getOutline(), false, false, false, false);
+		GeneralPath outlineLower = makeBezierPathFromControlPoints(brd, brd.getOutline(), false, false, false, false);
+		GeneralPath outlineUpper = makeBezierPathFromControlPoints(brd, brd.getOutline(), false, true, false, false);
 
-		GeneralPath outlineUpper = makeBezierPathFromControlPoints(brd.getOutline(), false, true, false, false);
 
 		Stroke stroke = new BasicStroke((float) (2.0 / scale));
 

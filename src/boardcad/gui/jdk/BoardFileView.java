@@ -128,14 +128,14 @@ public class BoardFileView extends FileView {
 			double outlinePos = height / 2 - (brd.getThickness() + 10.0) * scale
 					/ 2;
 			BezierBoardDrawUtil.paintBezierSplines(jd, leftMargin, outlinePos,
-					scale, 0.0, Color.BLACK, stroke,
+					scale, 0.0, Color.BLACK, stroke, brd,
 					new BezierSpline[] { brd.getOutline() },
 					BezierBoardDrawUtil.FlipY | BezierBoardDrawUtil.MirrorY, true);
 	
 			BezierBoardDrawUtil.paintBezierSplines(jd, leftMargin,
 					outlinePos
 							+ (brd.getMaxWidth() / 2.0 + brd.getThickness() + 10.0)
-							* scale, scale, 0.0, Color.BLACK, stroke,
+							* scale, scale, 0.0, Color.BLACK, stroke, brd,
 					new BezierSpline[] { brd.getDeck(), brd.getBottom() },
 					BezierBoardDrawUtil.FlipY, true);
 		}

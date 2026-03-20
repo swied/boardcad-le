@@ -96,6 +96,10 @@ public class BezierBoard extends AbstractBoard implements Cloneable {
 	protected String  mAux2 = new String();
 	protected String  mAux3 = new String();
 
+	protected int mTailType = 0; // 0 for standard, 1 for swallow/fish
+	protected double mSwallowTailDepth = 0;
+	protected double mSwallowTailWidth = 0;
+
 	protected BezierSpline mOutlineSpline = new BezierSpline();
 
 	protected BezierSpline mDeckSpline = new BezierSpline();
@@ -163,6 +167,9 @@ public class BezierBoard extends AbstractBoard implements Cloneable {
 			mCrossSections.add((BezierBoardCrossSection)brd.mCrossSections.get(i).clone());
 		}
 
+		mTailType = brd.mTailType;
+		mSwallowTailDepth = brd.mSwallowTailDepth;
+		mSwallowTailWidth = brd.mSwallowTailWidth;
 	}
 
 	public void reset()
@@ -232,9 +239,37 @@ public class BezierBoard extends AbstractBoard implements Cloneable {
 		mAux2 = new String();
 		mAux3 = new String();
 
+		mTailType = 0;
+		mSwallowTailDepth = 0;
+		mSwallowTailWidth = 0;
+
 		mCenterOfMass = 0;
 		
 		mProtected = false;
+	}
+
+	public int getTailType() {
+		return mTailType;
+	}
+
+	public void setTailType(int tailType) {
+		mTailType = tailType;
+	}
+
+	public double getSwallowTailDepth() {
+		return mSwallowTailDepth;
+	}
+
+	public void setSwallowTailDepth(double swallowTailDepth) {
+		mSwallowTailDepth = swallowTailDepth;
+	}
+
+	public double getSwallowTailWidth() {
+		return mSwallowTailWidth;
+	}
+
+	public void setSwallowTailWidth(double swallowTailWidth) {
+		mSwallowTailWidth = swallowTailWidth;
 	}
 
 
