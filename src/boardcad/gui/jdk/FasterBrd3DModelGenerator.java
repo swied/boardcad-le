@@ -169,6 +169,9 @@ public class FasterBrd3DModelGenerator {
 		if(isTail || isNose){
 			nrOfCoords += (widthSteps * 2) * 4 * 2;
 		}
+		if(brd.getTailType() == 1){
+			nrOfCoords += lengthSteps * 4 * 2;	// Extra for swallow tail walls
+		}
 
 
 		//Generate deck coordinates
@@ -445,6 +448,66 @@ public class FasterBrd3DModelGenerator {
 			quads.setCoordinates(nrOfQuads * 4, quadCoords);
 			quads.setNormals(nrOfQuads * 4, quadNormals);
 			nrOfQuads += q/4;
+		}
+
+		//Create swallow tail walls
+		if(brd.getTailType() == 1)
+		{
+			if(mCancelExecuting)return;
+
+			int q = 0;
+			quadCoords = new Point3d[lengthSteps*4];
+			quadNormals = new Vector3f[lengthSteps*4];
+
+			for (int j = 0; j < lengthSteps; j++) {
+				double x = startX + j*lengthStep;
+				if(x < brd.getSwallowTailDepth())
+				{
+					quadCoords[q] = bottomVertices[widthSteps][j];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = bottomVertices[widthSteps][j+1];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = deckVertices[0][j+1];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = deckVertices[0][j];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+				}
+			}
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
+
+			q = 0;
+			for (int j = 0; j < lengthSteps; j++) {
+				double x = startX + j*lengthStep;
+				if(x < brd.getSwallowTailDepth())
+				{
+					// Mirror by creating new points with inverted Y
+					quadCoords[q] = new Point3d(bottomVertices[widthSteps][j+1].x, -bottomVertices[widthSteps][j+1].y, bottomVertices[widthSteps][j+1].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(bottomVertices[widthSteps][j].x, -bottomVertices[widthSteps][j].y, bottomVertices[widthSteps][j].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(deckVertices[0][j].x, -deckVertices[0][j].y, deckVertices[0][j].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(deckVertices[0][j+1].x, -deckVertices[0][j+1].y, deckVertices[0][j+1].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+				}
+			}
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
 		}
 		
 		if (mCancelExecuting)return;

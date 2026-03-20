@@ -85,6 +85,16 @@ public class BezierBoardDrawUtil {
 			sx = spline.getControlPoint(spline.getNrOfControlPoints() - 1).getEndPoint().x;
 			sy = spline.getControlPoint(spline.getNrOfControlPoints() - 1).getEndPoint().y;
 
+			if(isOutline && brd.getTailType() == 1)
+			{
+				double depth = brd.getSwallowTailDepth();
+				double width = brd.getSwallowTailWidth();
+				if(sx < depth) {
+					double swallowY = (width/2.0) * (1.0 - sx/depth);
+					if(sy < swallowY) sy = swallowY;
+				}
+			}
+
 			if (vertical) {
 				tmp = sx;
 				sx = sy;
@@ -110,20 +120,6 @@ public class BezierBoardDrawUtil {
 				ex = spline.getControlPoint(i - 1).getEndPoint().x;
 				ey = spline.getControlPoint(i - 1).getEndPoint().y;
 
-				if (vertical) {
-					tmp = scx;
-					scx = scy;
-					scy = tmp;
-
-					tmp = ecx;
-					ecx = ecy;
-					ecy = tmp;
-
-					tmp = ex;
-					ex = ey;
-					ey = tmp;
-				}
-
 				if(isOutline && brd.getTailType() == 1)
 				{
 					double depth = brd.getSwallowTailDepth();
@@ -144,14 +140,46 @@ public class BezierBoardDrawUtil {
 					}
 				}
 
+				if (vertical) {
+					tmp = scx;
+					scx = scy;
+					scy = tmp;
+
+					tmp = ecx;
+					ecx = ecy;
+					ecy = tmp;
+
+					tmp = ex;
+					ex = ey;
+					ey = tmp;
+				}
+
 				path.curveTo((float) (scx * mulX), (float) (scy * mulY), (float) (ecx * mulX), (float) (ecy * mulY), (float) (ex * mulX), (float) (ey * mulY));
 
+			}
+
+			if(isOutline && brd.getTailType() == 1)
+			{
+				double crackX = brd.getSwallowTailDepth();
+				double crackY = 0;
+				if(vertical) { double t=crackX; crackX=crackY; crackY=t; }
+				path.lineTo((float)(crackX * mulX), (float)(crackY * mulY));
 			}
 		} else {
 
 			// Start
 			sx = spline.getControlPoint(0).getEndPoint().x;
 			sy = spline.getControlPoint(0).getEndPoint().y;
+
+			if(isOutline && brd.getTailType() == 1)
+			{
+				double depth = brd.getSwallowTailDepth();
+				double width = brd.getSwallowTailWidth();
+				if(sx < depth) {
+					double swallowY = (width/2.0) * (1.0 - sx/depth);
+					if(sy < swallowY) sy = swallowY;
+				}
+			}
 
 			if (vertical) {
 				tmp = sx;
@@ -164,15 +192,16 @@ public class BezierBoardDrawUtil {
 
 			if(isOutline && brd.getTailType() == 1)
 			{
-				double depth = brd.getSwallowTailDepth();
-				double width = brd.getSwallowTailWidth();
-				if(sx < depth) {
-					double swallowY = (width/2.0) * (1.0 - sx/depth);
-					if(sy < swallowY) sy = swallowY;
-				}
+				double crackX = brd.getSwallowTailDepth();
+				double crackY = 0;
+				if(vertical) { double t=crackX; crackX=crackY; crackY=t; }
+				path.moveTo((float)(crackX * mulX), (float)(crackY * mulY));
+				path.lineTo((float) (sx), (float) (sy));
 			}
-
-			path.moveTo((float) (sx), (float) (sy));
+			else
+			{
+				path.moveTo((float) (sx), (float) (sy));
+			}
 
 			for (int i = 0; i < spline.getNrOfControlPoints() - 1; i++) {
 
@@ -188,20 +217,6 @@ public class BezierBoardDrawUtil {
 				ex = spline.getControlPoint(i + 1).getEndPoint().x;
 				ey = spline.getControlPoint(i + 1).getEndPoint().y;
 
-				if (vertical) {
-					tmp = scx;
-					scx = scy;
-					scy = tmp;
-
-					tmp = ecx;
-					ecx = ecy;
-					ecy = tmp;
-
-					tmp = ex;
-					ex = ey;
-					ey = tmp;
-				}
-
 				if(isOutline && brd.getTailType() == 1)
 				{
 					double depth = brd.getSwallowTailDepth();
@@ -220,6 +235,20 @@ public class BezierBoardDrawUtil {
 						double swallowY = (width/2.0) * (1.0 - ex/depth);
 						if(ey < swallowY) ey = swallowY;
 					}
+				}
+
+				if (vertical) {
+					tmp = scx;
+					scx = scy;
+					scy = tmp;
+
+					tmp = ecx;
+					ecx = ecy;
+					ecy = tmp;
+
+					tmp = ex;
+					ex = ey;
+					ey = tmp;
 				}
 
 				path.curveTo((float) (scx * mulX), (float) (scy * mulY), (float) (ecx * mulX), (float) (ecy * mulY), (float) (ex * mulX), (float) (ey * mulY));
