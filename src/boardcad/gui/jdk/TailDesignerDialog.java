@@ -141,6 +141,7 @@ public class TailDesignerDialog extends JDialog {
 						mBrd.setTailType(type);
 						mBrd.setSwallowTailDepth(depth);
 						mBrd.setSwallowTailWidth(width);
+						mBrd.onOutlineChanged();
 					} catch (Exception ex) {
 						// Ignore or show error
 					}

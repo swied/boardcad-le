@@ -7,5 +7,6 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ~/.Xauthority:/root/.Xauthority:ro
+      - ./boards:/app/boards
     network_mode: host
     privileged: true # Often required for GPU access in JOGL

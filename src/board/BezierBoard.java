@@ -1810,6 +1810,10 @@ public class BezierBoard extends AbstractBoard implements Cloneable {
 			brd.mCrossSections.add((BezierBoardCrossSection)this.mCrossSections.get(i).clone());
 		}
 
+		brd.mTailType = this.mTailType;
+		brd.mSwallowTailDepth = this.mSwallowTailDepth;
+		brd.mSwallowTailWidth = this.mSwallowTailWidth;
+
 		return brd;
 	}
 
