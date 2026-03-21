@@ -2960,6 +2960,26 @@ public class MenuBar extends JMenuBar implements ActionListener {
 
 		boardMenu.add(weightCalc);
 
+		final AbstractAction tailDesigner = new AbstractAction() {
+			static final long serialVersionUID = 1L;
+			{
+				this.putValue(Action.NAME, LanguageResource.getString("TAILDESIGNER_STR"));
+			};
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				TailDesignerDialog dialog = new TailDesignerDialog(boardCAD.getCurrentBrd());
+				dialog.setModal(true);
+				dialog.setResizable(false);
+				dialog.setVisible(true);
+				dialog.dispose();
+				boardCAD.getFrame().repaint();
+			}
+
+		};
+
+		boardMenu.add(tailDesigner);
+
 		final AbstractAction flip = new AbstractAction() {
 			static final long serialVersionUID = 1L;
 			{

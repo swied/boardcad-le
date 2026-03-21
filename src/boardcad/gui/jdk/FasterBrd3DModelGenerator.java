@@ -169,6 +169,9 @@ public class FasterBrd3DModelGenerator {
 		if(isTail || isNose){
 			nrOfCoords += (widthSteps * 2) * 4 * 2;
 		}
+		if(brd.getTailType() == 1){
+			nrOfCoords += lengthSteps * 4 * 2;	// Extra for swallow tail walls
+		}
 
 
 		//Generate deck coordinates
@@ -189,7 +192,10 @@ public class FasterBrd3DModelGenerator {
 				deckVertices[i][j] = brd.getSurfacePoint(xPos, minAngle, maxAngle, i, widthSteps);
 				deckNormals[i][j] = brd.getSurfaceNormal(xPos, minAngle, maxAngle,i, widthSteps);
 				if(i == 0){
-					deckVertices[i][j].setY(0.0);
+					if(brd.getTailType() != 1 || xPos >= brd.getSwallowTailDepth())
+					{
+						deckVertices[i][j].setY(0.0);
+					}
 				}
 				xPos += lengthStep;
 			}
@@ -273,7 +279,10 @@ public class FasterBrd3DModelGenerator {
 				bottomVertices[i][j] = brd.getSurfacePoint(xPos, minAngle, maxAngle, i, widthSteps);
 				bottomNormals[i][j] = brd.getSurfaceNormal(xPos, minAngle, maxAngle,i, widthSteps);
 				if(i == widthSteps){
-					bottomVertices[i][j].setY(0.0);
+					if(brd.getTailType() != 1 || xPos >= brd.getSwallowTailDepth())
+					{
+						bottomVertices[i][j].setY(0.0);
+					}
 				}
 				xPos += lengthStep;
 			}
@@ -347,46 +356,56 @@ public class FasterBrd3DModelGenerator {
 			quadNormals = new Vector3f[widthSteps*4];
 
 			for (int i = 0; i < widthSteps; i++) {
-				quadCoords[q] = bottomVertices[i+1][0];
-				quadNormals[q] = bottomNormals[i+1][0];
-				++q;
-				quadCoords[q] = bottomVertices[i][0];
-				quadNormals[q] = bottomNormals[i][0];
-				++q;
-				quadCoords[q] = deckVertices[(widthSteps - i)][0];
-				quadNormals[q] = deckNormals[(widthSteps - i)][0];
-				++q;
-				quadCoords[q] = deckVertices[(widthSteps - i)-1][0];
-				quadNormals[q] = deckNormals[(widthSteps - i)-1][0];
-				++q;
-			}
-			quads.setCoordinates(nrOfQuads * 4, quadCoords);
-			quads.setNormals(nrOfQuads * 4, quadNormals);
-			nrOfQuads += q/4;
+				// Skip if quad is degenerate (both points at swallow tail center)
+				if(brd.getTailType() == 1 && Math.abs(bottomVertices[i+1][0].y - bottomVertices[i][0].y) < 0.001 && Math.abs(bottomVertices[i][0].y - (brd.getSwallowTailWidth()/2.0)) < 0.001)
+					continue;
 
-			//Mirror
-			for (int i = 0; i <= widthSteps; i++) {
-				bottomVertices[i][0].setY(-bottomVertices[i][0].getY());
-				deckVertices[i][0].setY(-deckVertices[i][0].getY());
-			}
-			q = 0;
-			for (int i = 0; i < widthSteps; i++) {
-				quadCoords[q] = bottomVertices[i][0];
-				quadNormals[q] = bottomNormals[i][0];
-				++q;
 				quadCoords[q] = bottomVertices[i+1][0];
 				quadNormals[q] = bottomNormals[i+1][0];
 				++q;
-				quadCoords[q] = deckVertices[(widthSteps - i)-1][0];
-				quadNormals[q] = deckNormals[(widthSteps - i)-1][0];
+				quadCoords[q] = bottomVertices[i][0];
+				quadNormals[q] = bottomNormals[i][0];
 				++q;
 				quadCoords[q] = deckVertices[(widthSteps - i)][0];
 				quadNormals[q] = deckNormals[(widthSteps - i)][0];
 				++q;
+				quadCoords[q] = deckVertices[(widthSteps - i)-1][0];
+				quadNormals[q] = deckNormals[(widthSteps - i)-1][0];
+				++q;
 			}
-			quads.setCoordinates(nrOfQuads * 4, quadCoords);
-			quads.setNormals(nrOfQuads * 4, quadNormals);
-			nrOfQuads += q/4;
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
+
+			q = 0;
+			quadCoords = new Point3d[widthSteps*4];
+			quadNormals = new Vector3f[widthSteps*4];
+			for (int i = 0; i < widthSteps; i++) {
+				// Skip if quad is degenerate
+				if(brd.getTailType() == 1 && Math.abs(bottomVertices[i+1][0].y - bottomVertices[i][0].y) < 0.001 && Math.abs(bottomVertices[i][0].y - (brd.getSwallowTailWidth()/2.0)) < 0.001)
+					continue;
+
+				// Create mirrored points with negative Y
+				quadCoords[q] = new Point3d(bottomVertices[i][0].x, -bottomVertices[i][0].y, bottomVertices[i][0].z);
+				quadNormals[q] = new Vector3f(bottomNormals[i][0].x, -bottomNormals[i][0].y, bottomNormals[i][0].z);
+				++q;
+				quadCoords[q] = new Point3d(bottomVertices[i+1][0].x, -bottomVertices[i+1][0].y, bottomVertices[i+1][0].z);
+				quadNormals[q] = new Vector3f(bottomNormals[i+1][0].x, -bottomNormals[i+1][0].y, bottomNormals[i+1][0].z);
+				++q;
+				quadCoords[q] = new Point3d(deckVertices[(widthSteps - i)-1][0].x, -deckVertices[(widthSteps - i)-1][0].y, deckVertices[(widthSteps - i)-1][0].z);
+				quadNormals[q] = new Vector3f(deckNormals[(widthSteps - i)-1][0].x, -deckNormals[(widthSteps - i)-1][0].y, deckNormals[(widthSteps - i)-1][0].z);
+				++q;
+				quadCoords[q] = new Point3d(deckVertices[(widthSteps - i)][0].x, -deckVertices[(widthSteps - i)][0].y, deckVertices[(widthSteps - i)][0].z);
+				quadNormals[q] = new Vector3f(deckNormals[(widthSteps - i)][0].x, -deckNormals[(widthSteps - i)][0].y, deckNormals[(widthSteps - i)][0].z);
+				++q;
+			}
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
 		}
 
 		//Create nose patch
@@ -412,33 +431,92 @@ public class FasterBrd3DModelGenerator {
 				quadNormals[q] = deckNormals[(widthSteps - i)][lengthSteps];
 				++q;
 			}
-			quads.setCoordinates(nrOfQuads * 4, quadCoords);
-			quads.setNormals(nrOfQuads * 4, quadNormals);
-			nrOfQuads += q/4;
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
 
-			//Mirror
-			for (int i = 0; i <= widthSteps; i++) {
-				bottomVertices[i][lengthSteps].setY(-bottomVertices[i][lengthSteps].getY());
-				deckVertices[i][lengthSteps].setY(-deckVertices[i][lengthSteps].getY());
-			}
 			q = 0;
+			quadCoords = new Point3d[steps*4];
+			quadNormals = new Vector3f[steps*4];
 			for (int i = 0; i < steps; i++) {
-				quadCoords[q] = bottomVertices[i+1][lengthSteps];
-				quadNormals[q] = bottomNormals[i+1][lengthSteps];
+				quadCoords[q] = new Point3d(bottomVertices[i+1][lengthSteps].x, -bottomVertices[i+1][lengthSteps].y, bottomVertices[i+1][lengthSteps].z);
+				quadNormals[q] = new Vector3f(bottomNormals[i+1][lengthSteps].x, -bottomNormals[i+1][lengthSteps].y, bottomNormals[i+1][lengthSteps].z);
 				++q;
-				quadCoords[q] = bottomVertices[i][lengthSteps];
-				quadNormals[q] = bottomNormals[i][lengthSteps];
+				quadCoords[q] = new Point3d(bottomVertices[i][lengthSteps].x, -bottomVertices[i][lengthSteps].y, bottomVertices[i][lengthSteps].z);
+				quadNormals[q] = new Vector3f(bottomNormals[i][lengthSteps].x, -bottomNormals[i][lengthSteps].y, bottomNormals[i][lengthSteps].z);
 				++q;
-				quadCoords[q] = deckVertices[(widthSteps - i)][lengthSteps];
-				quadNormals[q] = deckNormals[(widthSteps - i)][lengthSteps];
+				quadCoords[q] = new Point3d(deckVertices[(widthSteps - i)][lengthSteps].x, -deckVertices[(widthSteps - i)][lengthSteps].y, deckVertices[(widthSteps - i)][lengthSteps].z);
+				quadNormals[q] = new Vector3f(deckNormals[(widthSteps - i)][lengthSteps].x, -deckNormals[(widthSteps - i)][lengthSteps].y, deckNormals[(widthSteps - i)][lengthSteps].z);
 				++q;
-				quadCoords[q] = deckVertices[(widthSteps - i)-1][lengthSteps];
-				quadNormals[q] = deckNormals[(widthSteps - i)-1][lengthSteps];
+				quadCoords[q] = new Point3d(deckVertices[(widthSteps - i)-1][lengthSteps].x, -deckVertices[(widthSteps - i)-1][lengthSteps].y, deckVertices[(widthSteps - i)-1][lengthSteps].z);
+				quadNormals[q] = new Vector3f(deckNormals[(widthSteps - i)-1][lengthSteps].x, -deckNormals[(widthSteps - i)-1][lengthSteps].y, deckNormals[(widthSteps - i)-1][lengthSteps].z);
 				++q;
 			}
 			quads.setCoordinates(nrOfQuads * 4, quadCoords);
 			quads.setNormals(nrOfQuads * 4, quadNormals);
 			nrOfQuads += q/4;
+		}
+
+		//Create swallow tail walls
+		if(brd.getTailType() == 1)
+		{
+			if(mCancelExecuting)return;
+
+			int q = 0;
+			quadCoords = new Point3d[lengthSteps*4];
+			quadNormals = new Vector3f[lengthSteps*4];
+
+			for (int j = 0; j < lengthSteps; j++) {
+				double x = startX + j*lengthStep;
+				if(x < brd.getSwallowTailDepth())
+				{
+					quadCoords[q] = bottomVertices[widthSteps][j];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = bottomVertices[widthSteps][j+1];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = deckVertices[0][j+1];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+					quadCoords[q] = deckVertices[0][j];
+					quadNormals[q] = new Vector3f(0, -1, 0);
+					++q;
+				}
+			}
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
+
+			q = 0;
+			for (int j = 0; j < lengthSteps; j++) {
+				double x = startX + j*lengthStep;
+				if(x < brd.getSwallowTailDepth())
+				{
+					// Mirror by creating new points with inverted Y
+					quadCoords[q] = new Point3d(bottomVertices[widthSteps][j+1].x, -bottomVertices[widthSteps][j+1].y, bottomVertices[widthSteps][j+1].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(bottomVertices[widthSteps][j].x, -bottomVertices[widthSteps][j].y, bottomVertices[widthSteps][j].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(deckVertices[0][j].x, -deckVertices[0][j].y, deckVertices[0][j].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+					quadCoords[q] = new Point3d(deckVertices[0][j+1].x, -deckVertices[0][j+1].y, deckVertices[0][j+1].z);
+					quadNormals[q] = new Vector3f(0, 1, 0);
+					++q;
+				}
+			}
+			if(q > 0) {
+				quads.setCoordinates(nrOfQuads * 4, quadCoords);
+				quads.setNormals(nrOfQuads * 4, quadNormals);
+				nrOfQuads += q/4;
+			}
 		}
 		
 		if (mCancelExecuting)return;

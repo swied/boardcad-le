@@ -723,7 +723,7 @@ public class BoardEdit extends JComponent implements AbstractEditor, MouseInputL
 	}
 
 	public void drawPart(Graphics2D g, Color color, Stroke stroke, BezierBoard brd, boolean fill) {
-		BezierBoardDrawUtil.paintBezierSplines(new JavaDraw(g), mOffsetX, mOffsetY, mScale, 0.0, color, stroke,
+		BezierBoardDrawUtil.paintBezierSplines(new JavaDraw(g), mOffsetX, mOffsetY, mScale, 0.0, color, stroke, brd,
 				getActiveBezierSplines(brd), mDrawControl, fill);
 	}
 
